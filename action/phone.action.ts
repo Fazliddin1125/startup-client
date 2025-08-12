@@ -112,10 +112,16 @@ export const deleteAll = actionClient.schema(kindSchema).action<ReturnActionType
 })
 
 
-export const getSales = actionClient.action<ReturnActionType>(async()=>{
+export const getSales = actionClient.schema(searchParamsSchema).action<ReturnActionType>(async({parsedInput})=>{
+    const session = await getServerSession(authOptions)
+    const token = await generateToken(session?.currentUser?._id)
     const {data} = await axiosClient.get(
-        `api/sale/get`
+        `api/sale/get`, {
+            headers: {Authorization: `Bearer ${token}`},
+            params: parsedInput
+        }
     )
+    console.log(data)
     return JSON.parse(JSON.stringify(data))
 })
 

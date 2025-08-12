@@ -420,26 +420,38 @@ export default function PhonesPage({ phones, brends, capacities, colors, conditi
                         <Card key={phone._id}>
                             <CardContent className="p-4">
                                 <div className="flex items-start space-x-3">
-                                    <Image
-                                        src={phone._id || "/placeholder.svg"}
-                                        alt={phone.name}
-                                        width={60}
-                                        height={60}
-                                        className="rounded-lg object-cover"
-                                    />
+
                                     <div className="flex-1 min-w-0">
-                                        <div className="flex items-start justify-between">
-                                            <div className="min-w-0 flex-1">
-                                                <h3 className="font-medium text-sm truncate">{phone.name}</h3>
-                                                <p className="text-xs text-muted-foreground">
-                                                    {phone.color.name} • {phone.capacity.name}
-                                                </p>
+                                        <div className="w-100">
+                                            <div className="w-100  flex-1">
+                                                <div className="flex justify-between my-2" ><h2 className="">Model:{phone.name}</h2>
+                                                {getConditionBadge(phone.condition.name)}</div>
+                                                <div className="grid  grid-cols-2" >
+                                                    <div className="">
+                                                        <p className="text-sm text-muted-foreground">
+                                                            Brend:{phone.brend.name}
+                                                        </p>
+                                                        <p className="text-sm text-muted-foreground">
+                                                            Xotira:{phone.capacity.name}
+                                                        </p>
+                                                    </div>
+
+                                                    <div className="text-end" >
+                                                        <p className="text-sm text-muted-foreground">
+                                                            Rang:{phone.color.name}
+                                                        </p>
+                                                        <p className="text-xs text-muted-foreground">
+                                                            {phone.color.name} • {phone.capacity.name}
+                                                        </p>
+                                                    </div>
+                                                </div>
+
                                                 <div className="flex items-center space-x-2 mt-1">
-                                                    {getConditionBadge(phone.condition.name)}
-                                                    {getStatusBadge(phone.status)}
+                                                    
+                                                
                                                 </div>
                                             </div>
-                                            {/* {phone.daysInStock > 60 && <AlertCircle className="h-4 w-4 text-orange-500 ml-2" />} */}00
+                                           
                                         </div>
                                         <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
                                             <div>
@@ -466,152 +478,14 @@ export default function PhonesPage({ phones, brends, capacities, colors, conditi
                                             </div>
                                         </div>
                                         <div className="flex items-center space-x-2 mt-3">
-                                            {phone.status === "Sotuvda" && (
-                                                <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                                                    <DialogTrigger asChild>
-                                                        <Button
-                                                            size="sm"
+                                            <Button
+                                                onClick={() => { setOpenSaleModal(true); setSalePhone(phone) }}
+                                                variant="default"
+                                                size="sm"
 
-                                                            className="bg-green-600 hover:bg-green-700 text-xs"
-                                                        >
-                                                            Sotish
-                                                        </Button>
-                                                    </DialogTrigger>
-                                                    <DialogContent className="sm:max-w-[500px] mx-4">
-                                                        <DialogHeader>
-                                                            <DialogTitle>Telefon sotish</DialogTitle>
-                                                            <DialogDescription>
-                                                                {selectedPhone?.name} sotish uchun ma'lumotlarni kiriting
-                                                            </DialogDescription>
-                                                        </DialogHeader>
-
-                                                        <div className="grid gap-4 py-4">
-                                                            <div className="space-y-3">
-                                                                <Label>Sotish turi</Label>
-                                                                <RadioGroup value={saleType} onValueChange={setSaleType}>
-                                                                    <div className="flex items-center space-x-2">
-                                                                        <RadioGroupItem value="cash" id="cash" />
-                                                                        <Label htmlFor="cash">Naqd to'lov</Label>
-                                                                    </div>
-                                                                    <div className="flex items-center space-x-2">
-                                                                        <RadioGroupItem value="credit" id="credit" />
-                                                                        <Label htmlFor="credit">Nasiya (Muddatli to'lov)</Label>
-                                                                    </div>
-                                                                </RadioGroup>
-                                                            </div>
-
-                                                            <div className="grid grid-cols-1 gap-4">
-                                                                <div className="space-y-2">
-                                                                    <Label htmlFor="customerName">Mijoz ismi</Label>
-                                                                    <Input
-                                                                        id="customerName"
-                                                                        value={customerName}
-                                                                        onChange={(e) => setCustomerName(e.target.value)}
-                                                                        placeholder="Mijoz ismi"
-                                                                    />
-                                                                </div>
-                                                                <div className="space-y-2">
-                                                                    <Label htmlFor="customerPhone">Telefon raqami</Label>
-                                                                    <Input
-                                                                        id="customerPhone"
-                                                                        value={customerPhone}
-                                                                        onChange={(e) => setCustomerPhone(e.target.value)}
-                                                                        placeholder="+998 90 123 45 67"
-                                                                    />
-                                                                </div>
-                                                            </div>
-
-                                                            <div className="space-y-2">
-                                                                <Label htmlFor="sellPrice">Sotish narxi (UZS)</Label>
-                                                                <Input
-                                                                    id="sellPrice"
-                                                                    type="number"
-                                                                    value={sellPrice}
-                                                                    onChange={(e) => setSellPrice(e.target.value)}
-                                                                    placeholder="Sotish narxi"
-                                                                />
-                                                                <p className="text-sm text-muted-foreground">
-                                                                    Tavsiya etilgan narx: UZS
-                                                                </p>
-                                                            </div>
-
-                                                            {saleType === "credit" && (
-                                                                <>
-                                                                    <div className="grid grid-cols-1 gap-4">
-                                                                        <div className="space-y-2">
-                                                                            <Label htmlFor="installmentMonths">Muddati (oy)</Label>
-                                                                            <Select value={installmentMonths} onValueChange={setInstallmentMonths}>
-                                                                                <SelectTrigger>
-                                                                                    <SelectValue />
-                                                                                </SelectTrigger>
-                                                                                <SelectContent>
-                                                                                    <SelectItem value="3">3 oy</SelectItem>
-                                                                                    <SelectItem value="6">6 oy</SelectItem>
-                                                                                    <SelectItem value="9">9 oy</SelectItem>
-                                                                                    <SelectItem value="12">12 oy</SelectItem>
-                                                                                    <SelectItem value="18">18 oy</SelectItem>
-                                                                                    <SelectItem value="24">24 oy</SelectItem>
-                                                                                </SelectContent>
-                                                                            </Select>
-                                                                        </div>
-                                                                        <div className="space-y-2">
-                                                                            <Label htmlFor="downPayment">Boshlang'ich to'lov</Label>
-                                                                            <Input
-                                                                                id="downPayment"
-                                                                                type="number"
-                                                                                value={downPayment}
-                                                                                onChange={(e) => setDownPayment(e.target.value)}
-                                                                                placeholder="Boshlang'ich to'lov"
-                                                                            />
-                                                                        </div>
-                                                                    </div>
-
-                                                                    {sellPrice && downPayment && (
-                                                                        <div className="p-3 bg-blue-50 rounded-lg">
-                                                                            <p className="text-sm font-medium text-blue-800">Nasiya ma'lumotlari:</p>
-                                                                            <p className="text-sm text-blue-600">
-                                                                                Qolgan summa:{" "}
-                                                                                {(
-                                                                                    Number.parseInt(sellPrice) - Number.parseInt(downPayment || "0")
-                                                                                ).toLocaleString()}{" "}
-                                                                                UZS
-                                                                            </p>
-                                                                            <p className="text-sm text-blue-600">
-                                                                                Oylik to'lov:{" "}
-                                                                                {Math.round(
-                                                                                    (Number.parseInt(sellPrice) - Number.parseInt(downPayment || "0")) /
-                                                                                    Number.parseInt(installmentMonths),
-                                                                                ).toLocaleString()}{" "}
-                                                                                UZS
-                                                                            </p>
-                                                                        </div>
-                                                                    )}
-                                                                </>
-                                                            )}
-                                                        </div>
-
-                                                        <DialogFooter className="flex-col sm:flex-row gap-2">
-                                                            <Button
-                                                                variant="outline"
-                                                                onClick={() => setIsDialogOpen(false)}
-                                                                className="w-full sm:w-auto"
-                                                            >
-                                                                Bekor qilish
-                                                            </Button>
-                                                            <Button
-
-                                                                disabled={!customerName || !customerPhone || !sellPrice}
-                                                                className="w-full sm:w-auto bg-green-600 hover:bg-green-700"
-                                                            >
-                                                                {saleType === "cash" ? "Naqd sotish" : "Nasiyaga sotish"}
-                                                            </Button>
-                                                        </DialogFooter>
-                                                    </DialogContent>
-                                                </Dialog>
-                                            )}
-                                            <Button variant="outline" size="sm" className="text-xs">
-                                                <QrCode className="h-3 w-3 mr-1" />
-                                                QR
+                                                className="bg-green-600 hover:bg-green-700"
+                                            >
+                                                Sotish
                                             </Button>
                                             <Button variant="outline" size="sm" className="text-xs">
                                                 Tahrirlash

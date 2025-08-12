@@ -9,14 +9,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { DollarSign, Search, Calendar, Phone, Package, TrendingUp, Filter, Download, Eye, Menu, X } from "lucide-react"
-import Image from "next/image"
+
 import Link from "next/link"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+
 import { ThemeToggle } from "@/components/theme-toggle"
 import { ISale } from "@/types"
 import { format } from "date-fns"
 import numeral from "numeral";
 import { uz } from "date-fns/locale"
+import { useRouter, useSearchParams } from "next/navigation"
+import { formUrlQuery } from "@/lib/formUrlQuery"
 // Mock sales data
 interface SaleProps {
   sales: ISale[]
@@ -24,53 +26,39 @@ interface SaleProps {
 
 
 export default function SalesPage({ sales }: SaleProps) {
-  const [selectedSale, setSelectedSale] = useState<any>(null)
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
+
   const [searchTerm, setSearchTerm] = useState("")
   const [typeFilter, setTypeFilter] = useState("all")
   const [paymentFilter, setPaymentFilter] = useState("all")
-  const [dateFilter, setDateFilter] = useState("all")
+
   const [activeTab, setActiveTab] = useState("all")
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen)
   }
 
 
 
-  const getTypeBadge = (type: string) => {
-    return type === "phone" ? (
-      <Badge className="bg-blue-100 text-blue-800">
-        <Phone className="w-3 h-3 mr-1" />
-        Telefon
-      </Badge>
-    ) : (
-      <Badge className="bg-green-100 text-green-800">
-        <Package className="w-3 h-3 mr-1" />
-        Aksessuar
-      </Badge>
-    )
-  }
-
-  const getPaymentBadge = (paymentType: string) => {
-    return paymentType === "Naqd" ? (
-      <Badge className="bg-emerald-100 text-emerald-800">Naqd</Badge>
-    ) : (
-      <Badge className="bg-orange-100 text-orange-800">Nasiya</Badge>
-    )
-  }
 
 
-  const handleViewDetails = (sale: any) => {
-    setSelectedSale(sale)
-    setIsDialogOpen(true)
-  }
+
+
 
   // Calculate statistics
 
 
+  const onFilterChange = (value: string) => {
+    const newUrl = formUrlQuery({
+      key: 'filter',
+      value,
+      params: searchParams.toString(),
+    })
+    router.push(newUrl)
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -343,25 +331,32 @@ export default function SalesPage({ sales }: SaleProps) {
                   className="pl-10"
                 />
               </div>
-              <Select value={dateFilter} onValueChange={setDateFilter}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Sana" />
+              <Select onValueChange={onFilterChange}>
+                <SelectTrigger >
+                  <SelectValue placeholder="Vaqt oralig'ini tanlang" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Barcha sanalar</SelectItem>
                   <SelectItem value="today">Bugun</SelectItem>
-                  <SelectItem value="week">Bu hafta</SelectItem>
-                  <SelectItem value="month">Bu oy</SelectItem>
+                  <SelectItem value="yesterday">Kecha</SelectItem>
+                  <SelectItem value="current-month">Joriy oy</SelectItem>
+                  <SelectItem value="last-month">O‘tgan oy</SelectItem>
+                  <SelectItem value="last-3-months">So‘nggi 3 oy</SelectItem>
+                  <SelectItem value="last-6-months">So‘nggi 6 oy</SelectItem>
+                  <SelectItem value="current-year">Joriy yil</SelectItem>
                 </SelectContent>
               </Select>
-              <Select value={paymentFilter} onValueChange={setPaymentFilter}>
-                <SelectTrigger>
-                  <SelectValue placeholder="To'lov turi" />
+              <Select>
+                <SelectTrigger >
+                  <SelectValue placeholder="Brend tanlang" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Barcha to'lovlar</SelectItem>
-                  <SelectItem value="Naqd">Naqd</SelectItem>
-                  <SelectItem value="Nasiya">Nasiya</SelectItem>
+                  <SelectItem value="today">Bugun</SelectItem>
+                  <SelectItem value="yesterday">Kecha</SelectItem>
+                  <SelectItem value="current-month">Joriy oy</SelectItem>
+                  <SelectItem value="last-month">O‘tgan oy</SelectItem>
+                  <SelectItem value="last-3-months">So‘nggi 3 oy</SelectItem>
+                  <SelectItem value="last-6-months">So‘nggi 6 oy</SelectItem>
+                  <SelectItem value="current-year">Joriy yil</SelectItem>
                 </SelectContent>
               </Select>
               <Select value={typeFilter} onValueChange={setTypeFilter}>
@@ -387,7 +382,7 @@ export default function SalesPage({ sales }: SaleProps) {
           </TabsList>
 
           <TabsContent value="all" className="space-y-6">
-            <SalesTable sales={sales} onViewDetails={handleViewDetails} />
+            <SalesTable sales={sales} />
           </TabsContent>
 
           <TabsContent value="phone" className="space-y-6">
@@ -399,91 +394,15 @@ export default function SalesPage({ sales }: SaleProps) {
           </TabsContent>
         </Tabs>
 
-        {/* Sale Details Modal */}
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent className="sm:max-w-[500px]">
-            <DialogHeader>
-              <DialogTitle>Sotuv tafsilotlari</DialogTitle>
-              <DialogDescription>
-                #{selectedSale?.id} - {selectedSale?.saleDate} {selectedSale?.saleTime}
-              </DialogDescription>
-            </DialogHeader>
 
-            {selectedSale && (
-              <div className="space-y-4">
-                <div className="flex items-center space-x-4">
-                  <Image
-                    src={selectedSale.image || "/placeholder.svg"}
-                    alt={selectedSale.itemName}
-                    width={80}
-                    height={80}
-                    className="rounded-lg object-cover"
-                  />
-                  <div className="flex-1">
-                    <h3 className="font-semibold">{selectedSale.itemName}</h3>
-                    <p className="text-sm text-muted-foreground">{selectedSale.brand}</p>
-                    {selectedSale.type === "phone" && (
-                      <p className="text-sm text-muted-foreground">
-                        {selectedSale.color} • {selectedSale.storage}
-                      </p>
-                    )}
-                    {selectedSale.type === "accessory" && (
-                      <p className="text-sm text-muted-foreground">{selectedSale.category}</p>
-                    )}
-                  </div>
-                  <div className="text-right">
-                    {getTypeBadge(selectedSale.type)}
-                    <div className="mt-1">{getPaymentBadge(selectedSale.paymentType)}</div>
-                  </div>
-                </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Mijoz</p>
-                    <p className="font-medium">{selectedSale.customer}</p>
-                    <p className="text-sm text-muted-foreground">{selectedSale.customerPhone}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Miqdor</p>
-                    <p className="font-medium">{selectedSale.quantity} dona</p>
-                  </div>
-                </div>
-
-                <div className="border-t pt-4">
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span>Kirim narxi:</span>
-                      <span>{(selectedSale.costPrice / 1000).toLocaleString()} ming UZS</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Sotish narxi:</span>
-                      <span>{(selectedSale.sellPrice / 1000).toLocaleString()} ming UZS</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Jami summa:</span>
-                      <span className="font-bold">
-                        {((selectedSale.sellPrice * selectedSale.quantity) / 1000).toLocaleString()} ming UZS
-                      </span>
-                    </div>
-                    <div className="flex justify-between text-green-600">
-                      <span>Foyda:</span>
-                      <span className="font-bold">
-                        +{((selectedSale.profit * selectedSale.quantity) / 1000).toLocaleString()} ming UZS
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </DialogContent>
-        </Dialog>
       </main>
     </div>
   )
 }
 
 // Sales Table Component
-function SalesTable({ sales, onViewDetails }: { sales: ISale[]; onViewDetails: (sale: any) => void }) {
+function SalesTable({ sales }: { sales: ISale[]; }) {
   const getTypeBadge = (type: string) => {
     return type === "phone" ? (
       <Badge className="bg-blue-100 text-blue-800">
@@ -516,30 +435,19 @@ function SalesTable({ sales, onViewDetails }: { sales: ISale[]; onViewDetails: (
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Rasm</TableHead>
+
                 <TableHead>Mahsulot</TableHead>
-                <TableHead>Turi</TableHead>
-                <TableHead>Mijoz</TableHead>
                 <TableHead>Sana/Vaqt</TableHead>
-                <TableHead>Miqdor</TableHead>
+
                 <TableHead>Narx</TableHead>
                 <TableHead>Foyda</TableHead>
-                <TableHead>To'lov</TableHead>
                 <TableHead>Amallar</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {sales.map((sale) => (
                 <TableRow key={sale._id}>
-                  <TableCell>
-                    <Image
-                      src={"/placeholder.svg"}
-                      alt={sale.phone.name}
-                      width={50}
-                      height={50}
-                      className="rounded-lg object-cover"
-                    />
-                  </TableCell>
+
                   <TableCell>
                     <div>
                       <p className="font-medium">{sale.phone.name}</p>
@@ -551,33 +459,22 @@ function SalesTable({ sales, onViewDetails }: { sales: ISale[]; onViewDetails: (
 
                     </div>
                   </TableCell>
-                  <TableCell>445</TableCell>
-                  <TableCell>
-                    <div>
-                      <p className="font-medium">mijoz</p>
-                      <p className="text-sm text-muted-foreground">mijoz tel</p>
-                    </div>
-                  </TableCell>
+
                   <TableCell>
                     <div>
                       <p className="font-medium">{format(new Date(sale.createdAt), "d MMMM yyyy", { locale: uz })}</p>
                       <p className="text-sm text-muted-foreground">{format(new Date(sale.createdAt), "d MMMM yyyy", { locale: uz })}</p>
                     </div>
                   </TableCell>
-                  <TableCell className="text-center font-medium">miqdor</TableCell>
+
                   <TableCell className="font-mono">
-                  {numeral(sale.price).format("0,0")} so'm
+                    {numeral(sale.price).format("0,0")} so'm
                   </TableCell>
                   <TableCell className="font-mono text-green-600">
                     {numeral(sale.benifit).format("0,0")} so'm
                   </TableCell>
                   <TableCell>tolov turi</TableCell>
-                  <TableCell>
-                    <Button variant="outline" size="sm" onClick={() => onViewDetails(sale)}>
-                      <Eye className="h-4 w-4 mr-1" />
-                      Ko'rish
-                    </Button>
-                  </TableCell>
+
                 </TableRow>
               ))}
             </TableBody>
